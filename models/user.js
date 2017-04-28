@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require("bcrypt-nodejs");
 
 // Define our model
 const userSchema = new Schema({
@@ -12,37 +12,43 @@ const userSchema = new Schema({
 
 //On Save Hook, encrypt password
 //Befoe saving a model, run this function
-userSchema.pre('save', function(next) {
+userSchema.pre("save", function(next) {
   // get access to the user model
   const user = this;
 
   // TESTED 3 HR BEFORE ADDED THIS DAMN LINE
-  if (!user.isModified('password')) return next();
+  if (!user.isModified("password")) return next();
   // genrate a salt then run callback
   bcrypt.genSalt(10, function(err, salt) {
-    if (err) { return next(err); }
+    if (err) {
+      return next(err);
+    }
 
     // hash(encrypt) our password using the salt
     bcrypt.hash(user.password, salt, null, function(err, hash) {
-      if(err) { return next(err); }
+      if (err) {
+        return next(err);
+      }
 
       // overwrite plain text password with encrypted password
       user.password = hash;
       next();
-    })
-  })
+    });
+  });
 });
 
 userSchema.methods.comparePassword = function(candidatePassword, callback) {
   bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
-    if (err) { return callback(err) }
+    if (err) {
+      return callback(err);
+    }
 
-    callback(null, isMatch)
-  })
-}
+    callback(null, isMatch);
+  });
+};
 
 //Create the model class
-const ModelClass = mongoose.model('user', userSchema);
+const ModelClass = mongoose.model("user", userSchema);
 
 //export the model
 module.exports = ModelClass;
